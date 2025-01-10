@@ -59,6 +59,7 @@ namespace FastESSInstaller
     }
     public class Clientconfiguration
     {
+        public string SessionLifetime { get; set; }
         public string ServiceEndpoint { get; set; }
         public string ServiceAudience { get; set; }
         public string NotificationsUpdateInterval { get; set; }
@@ -67,6 +68,7 @@ namespace FastESSInstaller
         public string SignOutEndpoint { get; set; }
         public string Audience { get; set; }
         public string ReturnUrl { get; set; }
+        public string ReplyUrl { get; set; }
         public string ConfirmationEndpoint { get; set; }
         public string ChangePasswordEndpoint { get; set; }
         public string RefreshCodeInterval { get; set; }
@@ -80,14 +82,27 @@ namespace FastESSInstaller
         public string MobileSessionIdleTimeoutSecs { get; set; }
         public string AvailableLanguages { get; set; }
         public string SupportContacts { get; set; }
+        public bool AllowDocumentDownload { get; set; }
+        public bool EnableNotifications { get; set; }
+        public bool ShowHistoryButton { get; set; }
+        public bool ShowProfileButton { get; set; }
+        public string Appearance { get; set; }
     }
     public class SignPlugin
     {
         public string Id { get; set; }
         public string ProviderId { get; set; }
         public string Title { get; set; }
+        public string Path { get; set; }
         public string ClassName { get; set; }
+        public Instruction Instruction { get; set; }
         public Link Link { get; set; }
+    }
+
+    public class Instruction
+    {
+        public string ru { get; set; }
+        public string en { get; set; }
     }
     public class Link
     {

@@ -1,0 +1,58 @@
+{
+    "InstanceFolder": "D:\\TestEss", //Директория, в которую будут распакованы сервисы ЛК.
+    "InstanceTag": "243", //Тег, который будет в названии сайта и пула сервисов.
+    "PathToArhievedServices": "\\\\irnpo\\public\\Ess\\Platform\\2.4\\2.4.3\\Components",
+    "DataBase": { //Данные для формирования строк подключения к БД. Пока только СУБД Postges.
+      "DBHost": "localhost",
+      "Port": "46",
+      "EssDatabaseName": "Ess243",
+      "IdDatabaseName": "Identity243",
+      "MessagesDatabaseName": "Messages243",
+      "Username": "postgres",
+      "Password": "1111"
+    },
+    "RabbitMQ": "userName=;password=;hostName=192.168.58.88;port=;virtualHost=;",
+    "TokenIssuer": "HrProId",
+    "SigningCertificateThumbprint": "", //Отпечаток сертификата, 76d8..........84c00fba
+    "IntegrationServiceEndpoint": "http://localhost:RxVersion/integration/odata", //Эндпоинт СИ. Обращайте внимание на протокол.
+    "IntegrationServiceUser": "Service User",
+    "IntegrationServicePassword": "11111",
+    "RxVersion": "4.12",
+    "EssPlatformVersion": "2.4",
+    //В этих четырёх строках важно экранировать слеши - 4 вначале и по 2 между директориями.
+    "EssBaseEndpointPath": "\\\\irnpo\\public\\Ess\\Platform\\2.4\\2.4.3\\Solutions\\Ess\\TargetSystems\\EssBaseEndpoint.json",
+    "EssBasePath": "\\\\irnpo\\public\\Ess\\Platform\\2.4\\2.4.3\\Solutions\\Ess\\EssBase.xml",
+    "HRProRepositoryPath": "D:\\rx\\4120\\s\\HRPro_v22800",
+    "ESSRepositoryPath": "D:\\rx\\4120\\s\\ESSPlatform_v22800",
+    "ServiceFolders": [ //Список директорий, которые будет созданы. Пока менять нельзя.
+      "DocumentService",
+      "EssCLI",
+      "EssService",
+      "EssSite",
+      "IdCLI",
+      "IdentityService",
+      "MessageBroker/Sheduler",
+      "MessageBroker/WebApiService",
+      "SignService",
+      "StorageService",
+      "StorageService/storage"
+    ],
+    //Хосты и порты сервисов. Первые цифры порта лучше использовать от номера версии ЛК
+    "DocumentServiceHost": "localhost",
+    "EssServiceHost": "localhost",
+    "EssSiteHost": "localhost",
+    "IdentityServiceHost": "localhost",
+    "MessagingServiceHost": "localhost",
+    "ShedulingServiceHost": "localhost",
+    "SignServiceHost": "localhost",
+    "StorageServiceHost": "localhost",
+  
+    "DocumentServicePort": "2430",
+    "EssServicePort": "2431",
+    "EssSitePort": "2432",
+    "IdentityServicePort": "2433",
+    "ShedulingServicePort": "2434",
+    "MessagingServicePort": "2435",
+    "SignServicePort": "2436",
+    "StorageServicePort": "2437"
+  }

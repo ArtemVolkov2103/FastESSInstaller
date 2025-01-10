@@ -8,6 +8,6 @@ namespace FastESSInstaller
 {
     class EssCLIConfiguration
     {
-        public string DataBase { get; set; }
+        public Connectionstrings ConnectionStrings { get; set; }
     }
 }

@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace FastESSInstaller
@@ -19,6 +21,11 @@ namespace FastESSInstaller
         public string IntegrationServiceUser { get; set; }
         public string IntegrationServicePassword { get; set; }
         public string EssPlatformVersion { get; set; }
+        public string RxVersion { get; set; }
+        public string EssBaseEndpointPath { get; set; }
+        public string EssBasePath { get; set; }
+        public string HRProRepositoryPath { get; set; }
+        public string ESSRepositoryPath { get; set; }
         public List<string> ServiceFolders { get; set; }
         public string DocumentServiceHost { get; set; }
         public string EssServiceHost { get; set; }
@@ -28,8 +35,6 @@ namespace FastESSInstaller
         public string ShedulingServiceHost { get; set; }
         public string SignServiceHost { get; set; }
         public string StorageServiceHost { get; set; }
-        
-        
         public string DocumentServicePort { get; set; }
         public string EssServicePort { get; set; }
         public string EssSitePort { get; set; }
@@ -70,9 +75,12 @@ namespace FastESSInstaller
     public class Authentication
     {
         public string TokenIssuer { get; set; }
+        public string TrustedIssuer { get; set; }
         public string Audience { get; set; }
+        public string EncryptionKey { get; set; }
         public string SigningCertificateThumbprint { get; set; }
         public string ReturnUrl { get; set; }
+        public string SessionCookieLifetime { get; set; }
         public object[] Providers { get; set; }
 
     }
@@ -84,14 +92,27 @@ namespace FastESSInstaller
 
     public class Loglevel
     {
+        [JsonPropertyName("Default")]
         public string Default { get; set; }
         public string Microsoft { get; set; }
+        [JsonPropertyName("Microsoft.EntityFrameworkCore")]
+        public string MicrosoftEntityFrameworkCore { get; set; }
+        [JsonPropertyName("System.Net.Http.HttpClient.Default")]
+        public string SystemNetHttpHttpClientDefault { get; set; }
+        [JsonPropertyName("Microsoft.AspNetCore")]
+        public string MicrosoftAspNetCore { get; set; }
+        [JsonPropertyName("Microsoft.Hosting.Lifetime")]
         public string MicrosoftHostingLifetime { get; set; }
     }
 
     public class Globalization
     {
         public string DefaultCulture { get; set; }
+        public Languages AvailableLanguages { get; set; }
+    }
+    public class Languages
+    {
+        public string ru { get; set; }
     }
 
     public class Diagnostics
@@ -99,7 +120,9 @@ namespace FastESSInstaller
         public bool EnableRequestProfiling { get; set; }
         public string HealthCheckTimeout { get; set; }
         public bool EnableConfigLogging { get; set; }
+        public bool EnableSettingsLogging { get; set; }
         public bool EnableAuditLogging { get; set; }
+        public string LogOutputs { get; set; }
         public FileLogOutput FileLogOutput { get; set; }
     }
 

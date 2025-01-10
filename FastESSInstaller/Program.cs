@@ -11,6 +11,8 @@ using System.Xml;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Npgsql;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace FastESSInstaller
 {
@@ -100,7 +102,7 @@ namespace FastESSInstaller
                         }
                     }
                 }
-                Console.WriteLine("ОК \n");
+                Console.WriteLine("ОК");
             }
             catch (Exception ex)
             {
@@ -150,7 +152,7 @@ namespace FastESSInstaller
                     Path.Combine(generalConfiguration.InstanceFolder, @"EssCLI"), false);
                 CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices.Replace(@"\Components", @"\Tools"), @"Id-Cli-win-x64.zip"),
                     Path.Combine(generalConfiguration.InstanceFolder, @"IdCLI"), false);
-
+                Console.WriteLine();
             }
             catch (Exception ex)
             {
@@ -214,21 +216,68 @@ namespace FastESSInstaller
                 Console.ResetColor();
             }
         }
+        static void ConfigureDB()
+        {
+            try
+            {
+                string connectionToEssString = $"Server={generalConfiguration.IdentityServiceHost};Port={generalConfiguration.DataBase.Port};Database={generalConfiguration.DataBase.EssDatabaseName};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
+                string connectionToIdentityString = $"Server={generalConfiguration.IdentityServiceHost};Port={generalConfiguration.DataBase.Port};Database={generalConfiguration.DataBase.IdDatabaseName};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
+                string connectionToMessagesString = $"Server={generalConfiguration.MessagingServiceHost};Port={generalConfiguration.DataBase.Port};Database={generalConfiguration.DataBase.MessagesDatabaseName};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
+                Console.Write("Выполнение скриптов настройки БД... ");
+                var EssScriptPath = $@"{generalConfiguration.PathToArhievedServices}\Ess\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                var IdentityScriptPath = $@"{generalConfiguration.PathToArhievedServices}\IdentityService\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                var MessagesScriptPath = $@"{generalConfiguration.PathToArhievedServices}\MessageBroker\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                string script = File.ReadAllText(EssScriptPath);
+                using (var connection = new NpgsqlConnection(connectionToEssString))
+                {
+                    connection.Open();
+                    using (var command = new NpgsqlCommand(script, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                }
+                script = File.ReadAllText(IdentityScriptPath);
+                using (var connection = new NpgsqlConnection(connectionToIdentityString))
+                {
+                    connection.Open();
+                    using (var command = new NpgsqlCommand(script, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                }
+                script = File.ReadAllText(MessagesScriptPath);
+                using (var connection = new NpgsqlConnection(connectionToMessagesString))
+                {
+                    connection.Open();
+                    using (var command = new NpgsqlCommand(script, connection))
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                }
+                Console.WriteLine("ОК \n");
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Произошла ошибка при настройке БД: {ex.Message}");
+                Console.ResetColor();
+            }
+        }
         static void FillDocumentServiceConfig()
         {
             try
             {
                 Console.Write("Заполнение конфига DocumentService... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[0]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, "DocumentService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<DocumentServiceConfiguration>(file);
-                json.ConnectionStrings.IdentityService = $"Name=Directum.Core.IdentityService;Host={generalConfiguration.IdentityServiceHost};UseSsl=true;Port={generalConfiguration.IdentityServiceHost};User ID=DocServiceUser;Password=11111;";
+                json.ConnectionStrings.IdentityService = $"Name=Directum.Core.IdentityService;Host={generalConfiguration.IdentityServiceHost};UseSsl=true;Port={generalConfiguration.IdentityServicePort};User ID=EssServiceUser;Password=11111;";
                 json.ConnectionStrings.StorageService = $"Name=Directum.Core.BlobStorageService;Host={generalConfiguration.StorageServiceHost};UseSsl=false;Port={generalConfiguration.StorageServicePort};";
                 json.Authentication.TokenIssuer = generalConfiguration.TokenIssuer;
                 json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -242,13 +291,13 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига EssCLI... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[1]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, "EssCLI", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<EssCLIConfiguration>(file);
-                json.DataBase = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.EssDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
+                json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.EssDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -262,21 +311,23 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига EssService... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[2]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, "EssService", "appsettings.json");
                 var file = File.ReadAllText(configPath, Encoding.UTF8);
                 var json = JsonSerializer.Deserialize<EssServiceConfiguration>(file);
                 json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.EssDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
                 json.ConnectionStrings.RabbitMQ = generalConfiguration.RabbitMQ;
-                json.ConnectionStrings.IdentityService = $"Name=Directum.Core.IdentityService;Host={generalConfiguration.IdentityServiceHost};UseSsl=true;Port={generalConfiguration.IdentityServiceHost};User ID=DocServiceUser;Password=11111;";
+                json.ConnectionStrings.IdentityService = $"Name=Directum.Core.IdentityService;Host={generalConfiguration.IdentityServiceHost};UseSsl=true;Port={generalConfiguration.IdentityServicePort};User ID=EssServiceUser;Password=11111;";
                 json.ConnectionStrings.StorageService = $"Name=Directum.Core.BlobStorageService;Host={generalConfiguration.StorageServiceHost};UseSsl=false;Port={generalConfiguration.StorageServicePort};";
                 json.ConnectionStrings.SignService = $"Name=Directum.Core.SignService;Host={generalConfiguration.SignServiceHost};UseSsl=true;Port={generalConfiguration.SignServicePort};";
                 json.ConnectionStrings.MessagingService = $"Name=Directum.Core.MessageBroker;Host={generalConfiguration.MessagingServiceHost};UseSsl=false;Port={generalConfiguration.MessagingServicePort};";
                 json.ConnectionStrings.DocumentService = $"Name=Directum.Core.DocumentService;Host={generalConfiguration.DocumentServiceHost};UseSsl=false;Port={generalConfiguration.DocumentServicePort};";
+                json.ConnectionStrings.PreviewService = "";
+                json.ConnectionStrings.PreviewStorage = "";
                 json.Authentication.TokenIssuer = generalConfiguration.TokenIssuer;
                 json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -290,17 +341,18 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига EssSite... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[3]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, "EssSite", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<EssSiteConfiguration>(file);
-                json.ConnectionStrings.IdentityService = $"Name=Directum.Core.IdentityService;Host={generalConfiguration.IdentityServiceHost};UseSsl=true;Port={generalConfiguration.IdentityServiceHost};User ID=DocServiceUser;Password=11111;";
-                json.ConnectionStrings.OfficeService = $"Name=Directum.Core.EssService;Host={generalConfiguration.EssServiceHost};UseSsl=false;Port={generalConfiguration.EssServicePort};";
+                json.ConnectionStrings.IdentityService = $"Name=Directum.Core.IdentityService;Host={generalConfiguration.IdentityServiceHost};UseSsl=true;Port={generalConfiguration.IdentityServicePort};User ID=EssServiceUser;Password=11111;";
+                json.ConnectionStrings.OfficeService = $"Name=Directum.Core.EssService;Host={generalConfiguration.EssServiceHost};UseSsl=false;Port={generalConfiguration.EssServicePort};User ID=EssServiceUser;Password=11111;";
                 json.Authentication.ReturnUrl = $"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}";
                 json.Authentication.TokenIssuer = generalConfiguration.TokenIssuer;
                 json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
+                json.ClientConfiguration.ServiceEndpoint = "/office/";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -314,13 +366,13 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига IdCLI... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[5]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, "IdCLI", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<IdCLIConfiguration>(file, options);
                 json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.IdDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -334,12 +386,12 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига IdentityService... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[6]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, "IdentityService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<IdentityServiceConfiguration>(file, options);
                 json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.IdDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
                 json.ConnectionStrings.MessagingService = $"Name=Directum.Core.MessageBroker;Host={generalConfiguration.MessagingServiceHost};UseSsl=false;Port={generalConfiguration.MessagingServicePort};";
-                json.General.ServiceEndpoint = $"https://localhost:{generalConfiguration.IdentityServicePort}";
+                json.General.ServiceEndpoint = $"https://{generalConfiguration.IdentityServiceHost}:{generalConfiguration.IdentityServicePort}";
                 json.UserDevices.DeviceFingerprintSalt = "1234567890";
                 json.TokenIssuer.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
                 json.AccountEnrichment.Providers[0].Configuration.IntegrationServiceEndpoint = generalConfiguration.IntegrationServiceEndpoint;
@@ -348,7 +400,7 @@ namespace FastESSInstaller
                 json.AccountEnrichment.Providers[0].Configuration.EssPlatformVersion = generalConfiguration.EssPlatformVersion;
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -362,18 +414,19 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига ShedulerService... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[7]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<ShedulerServiceConfiguration>(file, options);
                 json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.MessagesDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
                 json.Transport.SmsDeliveryProxy = "Sms";
                 json.Transport.Proxies = new Proxy[] { json.Transport.Proxies[0] };
+                json.Transport.Proxies[0].Name = "Sms";
                 json.Transport.Proxies[0].Configuration.Username = "DIDSMS";
                 json.Transport.Proxies[0].Configuration.Password = "7863400";
                 json.Transport.Proxies[0].Configuration.Sender = "DIDSMS";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -387,15 +440,17 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига WebApiService... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[8]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\WebApiService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<WebApiServiceConfiguration>(file, options);
                 json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.MessagesDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
+                json.Authentication.TrustedIssuer = generalConfiguration.TokenIssuer;
+                json.Authentication.EncryptionKey = "";
                 json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
-                json.Scheduler.HealthCheckUrl = $"http://{generalConfiguration.MessagingServiceHost}:{generalConfiguration.MessagingServicePort}/health";
+                json.Scheduler.HealthCheckUrl = $"http://{generalConfiguration.ShedulingServiceHost}:{generalConfiguration.ShedulingServicePort}/health";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -409,11 +464,13 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига SignService... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[9]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, "SignService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<SignServiceConfiguration>(file, options);
                 json.ConnectionStrings.IdentityService = $"Name=Directum.Core.IdentityService;Host={generalConfiguration.IdentityServiceHost};UseSsl=true;Port={generalConfiguration.IdentityServicePort};User ID=DocServiceUser;Password=11111;";
                 json.ConnectionStrings.StorageService = $"Name=Directum.Core.BlobStorageService;Host={generalConfiguration.StorageServiceHost};UseSsl=false;Port={generalConfiguration.StorageServicePort};";
+                json.Authentication.Audience = "Directum.Core.SignService";
+                json.Authentication.TrustedIssuers[0].SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
                 var provider = new CloudSignProvider();
                 provider.CloudSignService = "Name=CloudSigningService;Host=ca.foxtrot.comp.npo;Port=7002;UseSsl=false;";
                 provider.CloudAuthService = "Name=CloudSigningService;Host=ca.foxtrot.comp.npo;Port=7002;UseSsl=false;";
@@ -429,7 +486,7 @@ namespace FastESSInstaller
                 json.Providers.Add(provider);
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -443,13 +500,17 @@ namespace FastESSInstaller
             try
             {
                 Console.Write($"Заполнение конфига StorageService... ");
-                var configPath = Path.Combine(Path.Combine(generalConfiguration.InstanceFolder, generalConfiguration.ServiceFolders[10]), "appsettings.json");
+                var configPath = Path.Combine(generalConfiguration.InstanceFolder, "StorageService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<StorageServiceConfiguration>(file, options);
-                json.General.FileStoragePath = @".\\storage";
+                json.General.FileStoragePath = @".\storage";
+                json.Authentication.TokenIssuer = generalConfiguration.TokenIssuer;
+                json.Authentication.Audience = "Directum.Core.BlobStorageService";
+                json.Authentication.EncryptionKey = "";
+                json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK \n");
+                Console.WriteLine("OK");
             }
             catch (Exception ex)
             {
@@ -472,23 +533,30 @@ namespace FastESSInstaller
             FillStorageServiceConfig();
             Console.WriteLine();
         }
-        static void AddSiteToIIS(string siteName, string protocol, string binding, string path)
+        static void AddSiteToIIS(string siteName, string protocol, string port, string path)
         {
             try
             {
-                ServerManager iisManager = new ServerManager();
-                Site site = iisManager.Sites.Add(siteName, protocol, $"*:{binding}:", generalConfiguration.InstanceFolder + @"\" + path);
-                site.ApplicationDefaults.ApplicationPoolName = siteName;
-                var newPool = iisManager.ApplicationPools.Add(siteName);
-                newPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
-                newPool.ManagedRuntimeVersion = "Без управляемого кода";
-                iisManager.CommitChanges();
-                Console.WriteLine($"Сайт и пул {siteName} добавлены");
+                using (ServerManager iisManager = new ServerManager())
+                {
+                    if (iisManager.Sites[siteName] != null)
+                    {
+                        Console.WriteLine($"Сайт с именем '{siteName}' уже существует.");
+                        return;
+                    }
+                    var site = iisManager.Sites.Add(siteName, protocol, $"*:{port}:", (generalConfiguration.InstanceFolder + @"\" + path));
+                    var newPool = iisManager.ApplicationPools.Add(siteName);
+                    newPool.ManagedRuntimeVersion = ""; //Версия среды CLR .NET: Без управляемого кода
+                    newPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
+                    site.ApplicationDefaults.ApplicationPoolName = newPool.Name;
+                    iisManager.CommitChanges();
+                    Console.WriteLine($"Сайт и пул {siteName} успешно добавлены.");
+                }
             }
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при добавлении сайта или пула: {ex.Message}");
+                Console.WriteLine($"Произошла ошибка при добавлении сайта или пула {siteName}: {ex.Message}");
                 Console.ResetColor();
             }
         }
@@ -499,18 +567,25 @@ namespace FastESSInstaller
                 using (ServerManager iisManager = new ServerManager())
                 {
                     Site site = iisManager.Sites[siteName];
-                    //Если сайт существует, то удалить
+                    var pool = iisManager.ApplicationPools[siteName];
+                    if (site == null && pool == null)
+                        return;
+                    //Если сайт существует, то удалить, чтобы создать новый
                     if (site != null)
                     {
+                        if (!site.State.Equals(ObjectState.Stopped)) //обход ошибки "Служба не запущена."
+                            site.Stop();
                         iisManager.Sites.Remove(site);
                     }
-                    var newPool = iisManager.ApplicationPools[siteName];
-                    if (newPool != null)
+
+                    if (pool != null)
                     {
-                        iisManager.ApplicationPools.Remove(newPool);
+                        if (!pool.State.Equals(ObjectState.Stopped))
+                            pool.Stop();
+                        iisManager.ApplicationPools.Remove(pool);
                     }
                     iisManager.CommitChanges();
-                    Console.WriteLine($"Сайт и пул {siteName} удалены");
+                    Console.WriteLine($"{siteName} удален из IIS");
                 }
             }
             catch (Exception ex)
@@ -541,20 +616,28 @@ namespace FastESSInstaller
             // Добавление нового правила в узел <rules>
             rulesNode.AppendChild(ruleElement);
         }
-        static void ConfigureIIS()
+        static void StopAndDeleteOldSitesAndPools()
         {
             DeleteSiteFromIIS("DocumentService" + generalConfiguration.InstanceTag);
-            AddSiteToIIS("DocumentService" + generalConfiguration.InstanceTag, "http", generalConfiguration.InstanceTag + 0, "DocumentService");
-
             DeleteSiteFromIIS("EssService" + generalConfiguration.InstanceTag);
-            AddSiteToIIS("EssService" + generalConfiguration.InstanceTag, "https", generalConfiguration.InstanceTag + 1, "EssService");
-
             DeleteSiteFromIIS("EssSite" + generalConfiguration.InstanceTag);
-            AddSiteToIIS("EssSite" + generalConfiguration.InstanceTag, "https", generalConfiguration.InstanceTag + 2, "EssSite");
+            DeleteSiteFromIIS("Identity" + generalConfiguration.InstanceTag);
+            DeleteSiteFromIIS("Sheduler" + generalConfiguration.InstanceTag);
+            DeleteSiteFromIIS("CoreMessageBroker" + generalConfiguration.InstanceTag);
+            DeleteSiteFromIIS("SignService" + generalConfiguration.InstanceTag);
+            DeleteSiteFromIIS("Storage" + generalConfiguration.InstanceTag);
+
+        }
+        static void ConfigureIIS()
+        {
+            AddSiteToIIS("DocumentService" + generalConfiguration.InstanceTag, "http", generalConfiguration.DocumentServicePort, "DocumentService");
+
+            AddSiteToIIS("EssService" + generalConfiguration.InstanceTag, "https", generalConfiguration.EssServicePort, "EssService");
+
+            AddSiteToIIS("EssSite" + generalConfiguration.InstanceTag, "https", generalConfiguration.EssSitePort, "EssSite");
             string webConfigPath = generalConfiguration.InstanceFolder + @"\EssSite\web.config";
             try
             {
-                // Загрузка web.config как XML-документ
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(webConfigPath);
 
@@ -582,10 +665,10 @@ namespace FastESSInstaller
                     rulesNode = xmlDoc.CreateElement("rules");
                     rewriteNode.AppendChild(rulesNode);
                     // Создание первого правила перенаправления
-                    AddRedirectRule(xmlDoc, rulesNode, "storage", "^storage/(.*)", $"http://localhost:{generalConfiguration.InstanceTag + 2}/" + "{R:1}");
+                    AddRedirectRule(xmlDoc, rulesNode, "storage", "^storage/(.*)", $"http://localhost:{generalConfiguration.StorageServicePort}/" + "{R:1}");
 
                     // Создание второго правила перенаправления
-                    AddRedirectRule(xmlDoc, rulesNode, "api", "^api/(.*)", $"http://localhost:{generalConfiguration.InstanceTag + 1}/api/" + "{R:1}");
+                    AddRedirectRule(xmlDoc, rulesNode, "api", "^api/(.*)", $"https://localhost:{generalConfiguration.EssServicePort}/api/" + "{R:1}");
                 }
                 xmlDoc.Save(webConfigPath);
 
@@ -598,32 +681,148 @@ namespace FastESSInstaller
                 Console.ResetColor();
             }
 
-            DeleteSiteFromIIS("Identity" + generalConfiguration.InstanceTag);
-            AddSiteToIIS("Identity" + generalConfiguration.InstanceTag, "https", generalConfiguration.InstanceTag + 3, "IdentityService");
+            AddSiteToIIS("Identity" + generalConfiguration.InstanceTag, "https", generalConfiguration.IdentityServicePort, "IdentityService");
 
-            DeleteSiteFromIIS("Sheduler" + generalConfiguration.InstanceTag);
-            AddSiteToIIS("Sheduler" + generalConfiguration.InstanceTag, "http", generalConfiguration.InstanceTag + 4, @"MessageBroker\Sheduler");
+            AddSiteToIIS("Sheduler" + generalConfiguration.InstanceTag, "http", generalConfiguration.ShedulingServicePort, @"MessageBroker\Sheduler");
 
-            DeleteSiteFromIIS("CoreMessageBroker" + generalConfiguration.InstanceTag);
-            AddSiteToIIS("CoreMessageBroker" + generalConfiguration.InstanceTag, "http", generalConfiguration.InstanceTag + 5, @"MessageBroker\WebApiService");
+            AddSiteToIIS("CoreMessageBroker" + generalConfiguration.InstanceTag, "http", generalConfiguration.MessagingServicePort, @"MessageBroker\WebApiService");
 
-            DeleteSiteFromIIS("SignService" + generalConfiguration.InstanceTag);
-            AddSiteToIIS("SignService" + generalConfiguration.InstanceTag, "https", generalConfiguration.InstanceTag + 6, "SignService");
+            AddSiteToIIS("SignService" + generalConfiguration.InstanceTag, "https", generalConfiguration.SignServicePort, "SignService");
 
-            DeleteSiteFromIIS("Storage" + generalConfiguration.InstanceTag);
-            AddSiteToIIS("Storage" + generalConfiguration.InstanceTag, "http", generalConfiguration.InstanceTag + 7, "Storage");
+            AddSiteToIIS("Storage" + generalConfiguration.InstanceTag, "http", generalConfiguration.StorageServicePort, "StorageService");
+            Console.WriteLine();
+        }
+        static async Task ExecuteCommandAsync(string workingDirectory, string command)
+        {
+            try
+            {
+                Console.WriteLine(command);
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = "cmd.exe";
+                    process.StartInfo.Arguments = $"/c {command}";
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = false;
+                    process.StartInfo.WorkingDirectory = workingDirectory;
+                    process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+                    process.StartInfo.StandardErrorEncoding = Encoding.UTF8;
+
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            if (e.Data.Contains("is not exists"))
+                                Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine(e.Data);
+                            Console.ResetColor();
+                        }
+                    };
+                    process.ErrorDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("Ошибка: " + e.Data);
+                            Console.ResetColor();
+                        }
+                    };
+                    process.Start();
+
+                    // Начинаем асинхронное чтение вывода и ошибок
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    // Создаем задачу для ожидания завершения процесса
+                    var waitTask = Task.Run(() => process.WaitForExit());
+                    // Ожидаем ввода от пользователя
+                    while (!process.HasExited)
+                    {
+                        if (!Console.IsInputRedirected && Console.KeyAvailable) // Проверяем, доступен ли ввод
+                        {
+                            string userInput = await Console.In.ReadLineAsync();
+                            if (process.StandardInput.BaseStream.CanWrite)
+                            {
+                                await process.StandardInput.WriteLineAsync(userInput);
+                            }
+                        }
+                    }
+                    await waitTask;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Произошла ошибка при выполнении консольных команд: " + ex.Message);
+                Console.ResetColor();
+            }
+        }
+        static async Task ConnectToRX()
+        {
+            try
+            {
+                Console.WriteLine("Выполнение консольных команд... ");
+                var hrpro_AdapterConfigPath = Path.Combine(generalConfiguration.HRProRepositoryPath, "data\\AdapterConfig\\HRPro_AdapterConfig.json");
+                var pathToEssCLI = Path.Combine(generalConfiguration.InstanceFolder, "EssCLI");
+                var pathToIdCLI = Path.Combine(generalConfiguration.InstanceFolder, "IdCLI");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess connect \"{generalConfiguration.EssBaseEndpointPath}\" -p UserIdentity=\"DirectumRX\" -p " +
+                    $"Configuration:AppServerConnection:Endpoint=\"{generalConfiguration.IntegrationServiceEndpoint}\" -p " +
+                    $"Configuration:AppServerConnection:UserName=\"{generalConfiguration.IntegrationServiceUser}\" -p " +
+                    $"Configuration:AppServerConnection:Password=\"{generalConfiguration.IntegrationServicePassword}\" -p " +
+                    $"Configuration:ServerVersion=\"{generalConfiguration.RxVersion}\"");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess connect \"{hrpro_AdapterConfigPath}\" -p UserIdentity=\"DirectumRX\" -p " +
+                    $"Configuration:AppServerConnection:Endpoint=\"{generalConfiguration.IntegrationServiceEndpoint}\" -p " +
+                    $"Configuration:AppServerConnection:UserName=\"{generalConfiguration.IntegrationServiceUser}\" -p " +
+                    $"Configuration:AppServerConnection:Password=\"{generalConfiguration.IntegrationServicePassword}\" -p " +
+                    $"Configuration:ServerVersion=\"{generalConfiguration.RxVersion}\"");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.EssBasePath}\" -a");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.ESSRepositoryPath}\\data\\EssConfig\\Roles.xml\" -a");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.ESSRepositoryPath}\\data\\EssConfig\\SignPlatform.xml\" -a");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.HRProRepositoryPath}\\data\\EssConfig\\HRDocFlow\\HrProStatements.xml\" -a");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.HRProRepositoryPath}\\data\\EssConfig\\Vacations\\Vacations.xml\" -a");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.HRProRepositoryPath}\\data\\EssConfig\\Hiring\\Hiring.xml\" -a");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.HRProRepositoryPath}\\data\\EssConfig\\Hiring\\Roles.xml\" -a");
+                await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.ESSRepositoryPath}\\data\\EssConfig\\UsageAgreements\" -a");
+
+                await ExecuteCommandAsync(pathToIdCLI, $"id add role \"service\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add user \"DocServiceUser\" -p password=\"11111\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"DocServiceUser\" -r \"service\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.DocumentService\" -c {generalConfiguration.PathToArhievedServices}\\DocumentService\\DocumentServiceAudience.json\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add user \"EssServiceUser\" -p password=\"11111\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"EssServiceUser\" -r \"service\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.EssService\" -c {generalConfiguration.PathToArhievedServices}\\Ess\\EssServiceAudience.json\" -p icon=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}/logo_32.png\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.EssSite\" -c {generalConfiguration.PathToArhievedServices}\\Ess\\EssSiteAudience.json\" -p returnUrl=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}\" -p originUrl=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}\" -p icon=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}/logo_32.png\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.MessageBroker\" -c {generalConfiguration.PathToArhievedServices}\\MessageBroker\\MessageBrokerAudience.json\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add user \"SignServiceUser\" -p password=\"11111\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add user \"SignServiceOperator\" -p password=\"11111\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add role \"Admins\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add role \"Users\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"SignServiceUser\" -r \"service\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"SignServiceOperator\" -r \"Admins\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.SignService\" -c {generalConfiguration.PathToArhievedServices}\\SignService\\SignServiceAudience.json\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.BlobStorageService\" -c {generalConfiguration.PathToArhievedServices}\\StorageService\\BlobStorageServiceAudience.json\"");
+                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Integration service\" -c  {generalConfiguration.PathToArhievedServices}\\Ess\\RXIntegrationServiceAudience.json\"");
+
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Произошла ошибка при выполнении консольных команд: {ex.Message}");
+                Console.ResetColor();
+            }
         }
 
-
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.Unicode;
             if (File.Exists(configPath))
             {
                 try
                 {
                     Console.Write($"Чтение Config.json... ");
                     string data = File.ReadAllText(configPath);
-                    generalConfiguration = JsonSerializer.Deserialize<GeneralConfiguration>(data);
+                    generalConfiguration = JsonSerializer.Deserialize<GeneralConfiguration>(data, options);
                     Console.WriteLine($"OK");
                 }
                 catch (Exception ex)
@@ -632,13 +831,26 @@ namespace FastESSInstaller
                     Console.WriteLine($"Произошла ошибка при чтении Config.json: {ex.Message}");
                     Console.ResetColor();
                 }
+                Process[] processes = Process.GetProcessesByName("ess");
+                foreach (Process process in processes)
+                {
+                    Console.WriteLine(process.ProcessName + " " + process.MainModule.FileName);
+                    if (process.MainModule.FileName.Contains(generalConfiguration.InstanceFolder))
+                    {
+                        //process.Kill();
+                        Console.WriteLine($"Process {process.ProcessName} has been killed.");
+                    }
+                }
                 Console.WriteLine();
-                /*ClearOldFilesIfExists();
+                StopAndDeleteOldSitesAndPools();
+                ClearOldFilesIfExists();
                 CreateFolders();
-                ExtractArhives();*/
+                ExtractArhives();
                 CreateDatabasesIfNotExist();
-                //FillConfigs();
-                //ConfigureIIS();
+                ConfigureDB();
+                FillConfigs();
+                ConfigureIIS();
+                await ConnectToRX();
             }
             else
             {

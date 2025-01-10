@@ -15,7 +15,6 @@ namespace FastESSInstaller
         public Transport Transport { get; set; }
         public string[] RetryPolicyIntervals { get; set; }
         public Messageprocessingservice MessageProcessingService { get; set; }
-        public Testchecks TestChecks { get; set; }
     }
     public class Secrets
     {
@@ -51,6 +50,9 @@ namespace FastESSInstaller
         public int MaxTransmitRetryCount { get; set; }
         public bool UseTinyUrl { get; set; }
         public int MessagesPerSecond { get; set; }
+        public string NotificationTitleTemplate { get; set; }
+        public string ApplicationID { get; set; }
+        public string ServiceName { get; set; }
         public string FromAddress { get; set; }
         public string FromContact { get; set; }
         public string ApiKey { get; set; }
@@ -60,40 +62,7 @@ namespace FastESSInstaller
     public class Messageprocessingservice
     {
         public int ProcessDelayMs { get; set; }
-    }
-
-    public class Testchecks
-    {
-        public Check[] Checks { get; set; }
-    }
-
-    public class Check
-    {
-        public string name { get; set; }
-        public string type { get; set; }
-        public Configuration1 configuration { get; set; }
-    }
-
-    public class Configuration1
-    {
-        public string[] ValidatingFiles { get; set; }
-        public Expectedvalues ExpectedValues { get; set; }
-        public string configFileName { get; set; }
-        public string[] RequiredFiles { get; set; }
-        public string[] RequiredAuthentications { get; set; }
-        public string healthEndpoint { get; set; }
-    }
-
-    public class Expectedvalues
-    {
-        public string ConnectionStringsDatabase { get; set; }
-        public string AuthenticationSigningCertificateThumbprint { get; set; }
-        public string TransportProxies0ConfigurationHost { get; set; }
-        public string TransportProxies0ConfigurationPort { get; set; }
-        public string TransportProxies0ConfigurationUseSsl { get; set; }
-        public string TransportProxies0ConfigurationUsername { get; set; }
-        public string TransportProxies0ConfigurationPassword { get; set; }
-        public string TransportProxies0ConfigurationSender { get; set; }
+        public bool TryPushBeforeSms { get; set; }
     }
 }
 
