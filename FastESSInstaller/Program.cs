@@ -18,7 +18,7 @@ namespace FastESSInstaller
 {
     class Program
     {
-        static string configPath = @"\FastESSInstaller\FastESSInstaller\Config.json";
+        
         static JsonSerializerOptions options = new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -816,6 +816,11 @@ namespace FastESSInstaller
         static async Task Main(string[] args)
         {
             Console.OutputEncoding = Encoding.Unicode;
+            string configPath = @"\FastESSInstaller\FastESSInstaller\Config.json";
+            string releasePath = Path.Combine(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).DirectoryName, @"Config.json");
+            if (File.Exists(releasePath))
+                configPath = releasePath;
+            Console.WriteLine("Используется конфиг по пути: " + configPath);
             if (File.Exists(configPath))
             {
                 try
@@ -858,6 +863,7 @@ namespace FastESSInstaller
                 Console.WriteLine($"Не удалось найти Config.json в папке проекта");
                 Console.ResetColor();
             }
+            Console.ReadKey();
         }
     }
 }
