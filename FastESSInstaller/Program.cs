@@ -18,7 +18,7 @@ namespace FastESSInstaller
 {
     class Program
     {
-        
+
         static JsonSerializerOptions options = new JsonSerializerOptions
         {
             WriteIndented = true,
@@ -115,43 +115,88 @@ namespace FastESSInstaller
         {
             try
             {
-                //много похожих строк, как иначе - хз, потому что нужно сохранять порядок извлечения
-                //извлечение архивов без замены файлов (с флагом false)
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\WebApiService-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker/WebApiService"), false);
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\Scheduler-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\SmscTransport-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\MobilGroupTransport-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\MtsMarketologTransport-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
+                if (generalConfiguration.OnePathToServices)
+                {
+                    //много похожих строк, как иначе - хз, потому что нужно сохранять порядок извлечения
+                    //извлечение архивов без замены файлов (с флагом false)
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\WebApiService-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker/WebApiService"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\Scheduler-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\SmscTransport-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\MobilGroupTransport-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"MessageBroker\MtsMarketologTransport-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
 
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"IdentityService\IdentityService-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"IdentityService"), false);
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"IdentityService\EssPlatformIdentityProvider2-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"IdentityService"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"IdentityService\IdentityService-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"IdentityService"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"IdentityService\EssPlatformIdentityProvider2-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"IdentityService"), false);
 
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"StorageService\StorageApi.Service-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"StorageService"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"StorageService\StorageApi.Service-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"StorageService"), false);
 
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"DocumentService\WebApiService-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"DocumentService"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"DocumentService\WebApiService-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"DocumentService"), false);
 
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"SignService\Directum.Core.SignService.App-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"SignService"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"SignService\Directum.Core.SignService.App-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"SignService"), false);
 
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"Ess\OfficeService-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"EssService"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"Ess\OfficeService-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"EssService"), false);
 
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"Ess\Site-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"EssSite"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices, @"Ess\Site-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"EssSite"), false);
 
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices.Replace(@"\Components", @"\Tools"), @"Ess-Cli-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"EssCLI"), false);
-                CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices.Replace(@"\Components", @"\Tools"), @"Id-Cli-win-x64.zip"),
-                    Path.Combine(generalConfiguration.InstanceFolder, @"IdCLI"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices.Replace(@"\Components", @"\Tools"), @"Ess-Cli-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"EssCLI"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathToArhievedServices.Replace(@"\Components", @"\Tools"), @"Id-Cli-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"IdCLI"), false);
+
+                }
+                else
+                {
+                    if (generalConfiguration.MessagingServiceHost.Equals("localhost"))//TODO для 2.5 ставится иначе
+                    {
+                        CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.MessageBroker, @"Release\WebApiService-win-x64.zip"),
+                                                Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker/WebApiService"), false);
+                        CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.MessageBroker, @"Release\Scheduler-win-x64.zip"),
+                            Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
+                        CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.MessageBroker, @"Release\SmscTransport-win-x64.zip"),
+                            Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
+                        CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.MessageBroker, @"Release\MobilGroupTransport-win-x64.zip"),
+                            Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
+                        CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.MessageBroker, @"Release\MtsMarketologTransport-win-x64.zip"),
+                            Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler"), false);
+                    }
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.IdentityService_IdCLI, @"Release\IdentityService-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"IdentityService"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.IdentityService_IdCLI, @"Release\EssPlatformIdentityProvider2-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"IdentityService"), false);
+
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.StorageService, @"Release\StorageApi.Service-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"StorageService"), false);
+
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.DocumentService, @"Release\WebApiService-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"DocumentService"), false);
+
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.SignService, @"Release\Directum.Core.SignService.App-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"SignService"), false);
+
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.Ess, @"Release\OfficeService-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"EssService"), false);
+
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.Ess, @"Release\Site-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"EssSite"), false);
+
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.Ess, @"Release\Ess-Cli-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"EssCLI"), false);
+                    CheckIfExistAndExtractFiles(Path.Combine(generalConfiguration.PathsToArhievedStageServices.IdentityService_IdCLI, @"Release\Id-Cli-win-x64.zip"),
+                        Path.Combine(generalConfiguration.InstanceFolder, @"IdCLI"), false);
+                }
+
                 Console.WriteLine();
             }
             catch (Exception ex)
@@ -224,9 +269,17 @@ namespace FastESSInstaller
                 string connectionToIdentityString = $"Server={generalConfiguration.IdentityServiceHost};Port={generalConfiguration.DataBase.Port};Database={generalConfiguration.DataBase.IdDatabaseName};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
                 string connectionToMessagesString = $"Server={generalConfiguration.MessagingServiceHost};Port={generalConfiguration.DataBase.Port};Database={generalConfiguration.DataBase.MessagesDatabaseName};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
                 Console.Write("Выполнение скриптов настройки БД... ");
-                var EssScriptPath = $@"{generalConfiguration.PathToArhievedServices}\Ess\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
-                var IdentityScriptPath = $@"{generalConfiguration.PathToArhievedServices}\IdentityService\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
-                var MessagesScriptPath = $@"{generalConfiguration.PathToArhievedServices}\MessageBroker\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                var EssScriptPath = $@"{generalConfiguration.PathsToArhievedStageServices.Ess}\Release\DeployScripts\PostgreSql\InitializeDatabase.sql";
+                var IdentityScriptPath = $@"{generalConfiguration.PathsToArhievedStageServices.IdentityService_IdCLI}\Release\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                var MessagesScriptPath = $@"{generalConfiguration.PathsToArhievedStageServices.MessageBroker}\Release\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                if (generalConfiguration.OnePathToServices)
+                {
+                    EssScriptPath = $@"{generalConfiguration.PathToArhievedServices}\Ess\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                    IdentityScriptPath = $@"{generalConfiguration.PathToArhievedServices}\IdentityService\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                    MessagesScriptPath = $@"{generalConfiguration.PathToArhievedServices}\MessageBroker\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
+                    
+                }
+
                 string script = File.ReadAllText(EssScriptPath);
                 using (var connection = new NpgsqlConnection(connectionToEssString))
                 {
@@ -245,15 +298,19 @@ namespace FastESSInstaller
                         command.ExecuteNonQuery();
                     }
                 }
-                script = File.ReadAllText(MessagesScriptPath);
-                using (var connection = new NpgsqlConnection(connectionToMessagesString))
+                if (generalConfiguration.MessagingServiceHost.Equals("localhost")) //БД нужна только для локального
                 {
-                    connection.Open();
-                    using (var command = new NpgsqlCommand(script, connection))
+                    script = File.ReadAllText(MessagesScriptPath);
+                    using (var connection = new NpgsqlConnection(connectionToMessagesString))
                     {
-                        command.ExecuteNonQuery();
+                        connection.Open();
+                        using (var command = new NpgsqlCommand(script, connection))
+                        {
+                            command.ExecuteNonQuery();
+                        }
                     }
                 }
+
                 Console.WriteLine("ОК \n");
             }
             catch (Exception ex)
@@ -345,7 +402,7 @@ namespace FastESSInstaller
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<EssSiteConfiguration>(file);
                 json.ConnectionStrings.IdentityService = $"Name=Directum.Core.IdentityService;Host={generalConfiguration.IdentityServiceHost};UseSsl=true;Port={generalConfiguration.IdentityServicePort};User ID=EssServiceUser;Password=11111;";
-                json.ConnectionStrings.OfficeService = $"Name=Directum.Core.EssService;Host={generalConfiguration.EssServiceHost};UseSsl=false;Port={generalConfiguration.EssServicePort};User ID=EssServiceUser;Password=11111;";
+                json.ConnectionStrings.OfficeService = $"Name=Directum.Core.EssService;Host={generalConfiguration.EssServiceHost};UseSsl=true;Port={generalConfiguration.EssServicePort};User ID=EssServiceUser;Password=11111;";
                 json.Authentication.ReturnUrl = $"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}";
                 json.Authentication.TokenIssuer = generalConfiguration.TokenIssuer;
                 json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
@@ -527,8 +584,11 @@ namespace FastESSInstaller
             FillEssSiteConfig();
             FillIdCLIConfig();
             FillIdentityServiceConfig();
-            FillShedulerServiceConfig();
-            FillWebApiServiceConfig();
+            if (generalConfiguration.MessagingServiceHost.Equals("localhost"))
+            {
+                FillShedulerServiceConfig();
+                FillWebApiServiceConfig();
+            }
             FillSignServiceConfig();
             FillStorageServiceConfig();
             Console.WriteLine();
@@ -762,6 +822,7 @@ namespace FastESSInstaller
         {
             try
             {
+
                 Console.WriteLine("Выполнение консольных команд... ");
                 var hrpro_AdapterConfigPath = Path.Combine(generalConfiguration.HRProRepositoryPath, "data\\AdapterConfig\\HRPro_AdapterConfig.json");
                 var pathToEssCLI = Path.Combine(generalConfiguration.InstanceFolder, "EssCLI");
@@ -788,22 +849,42 @@ namespace FastESSInstaller
                 await ExecuteCommandAsync(pathToIdCLI, $"id add role \"service\"");
                 await ExecuteCommandAsync(pathToIdCLI, $"id add user \"DocServiceUser\" -p password=\"11111\"");
                 await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"DocServiceUser\" -r \"service\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.DocumentService\" -c {generalConfiguration.PathToArhievedServices}\\DocumentService\\DocumentServiceAudience.json\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add user \"EssServiceUser\" -p password=\"11111\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"EssServiceUser\" -r \"service\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.EssService\" -c {generalConfiguration.PathToArhievedServices}\\Ess\\EssServiceAudience.json\" -p icon=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}/logo_32.png\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.EssSite\" -c {generalConfiguration.PathToArhievedServices}\\Ess\\EssSiteAudience.json\" -p returnUrl=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}\" -p originUrl=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}\" -p icon=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}/logo_32.png\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.MessageBroker\" -c {generalConfiguration.PathToArhievedServices}\\MessageBroker\\MessageBrokerAudience.json\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add user \"SignServiceUser\" -p password=\"11111\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add user \"SignServiceOperator\" -p password=\"11111\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add role \"Admins\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add role \"Users\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"SignServiceUser\" -r \"service\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"SignServiceOperator\" -r \"Admins\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.SignService\" -c {generalConfiguration.PathToArhievedServices}\\SignService\\SignServiceAudience.json\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.BlobStorageService\" -c {generalConfiguration.PathToArhievedServices}\\StorageService\\BlobStorageServiceAudience.json\"");
-                await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Integration service\" -c  {generalConfiguration.PathToArhievedServices}\\Ess\\RXIntegrationServiceAudience.json\"");
-
+                if (generalConfiguration.OnePathToServices)
+                {
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.DocumentService\" -c {generalConfiguration.PathToArhievedServices}\\DocumentService\\DocumentServiceAudience.json\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add user \"EssServiceUser\" -p password=\"11111\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"EssServiceUser\" -r \"service\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.EssService\" -c {generalConfiguration.PathToArhievedServices}\\Ess\\EssServiceAudience.json\" -p icon=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}/logo_32.png\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.EssSite\" -c {generalConfiguration.PathToArhievedServices}\\Ess\\EssSiteAudience.json\" -p returnUrl=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}\" -p originUrl=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}\" -p icon=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}/logo_32.png\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.MessageBroker\" -c {generalConfiguration.PathToArhievedServices}\\MessageBroker\\MessageBrokerAudience.json\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add user \"SignServiceUser\" -p password=\"11111\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add user \"SignServiceOperator\" -p password=\"11111\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add role \"Admins\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add role \"Users\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"SignServiceUser\" -r \"service\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"SignServiceOperator\" -r \"Admins\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.SignService\" -c {generalConfiguration.PathToArhievedServices}\\SignService\\SignServiceAudience.json\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.BlobStorageService\" -c {generalConfiguration.PathToArhievedServices}\\StorageService\\BlobStorageServiceAudience.json\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Integration service\" -c  {generalConfiguration.PathToArhievedServices}\\Ess\\RXIntegrationServiceAudience.json\"");
+                }
+                else
+                {
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.DocumentService\" -c {generalConfiguration.PathsToArhievedStageServices.DocumentService}\\Release\\DocumentServiceAudience.json\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add user \"EssServiceUser\" -p password=\"11111\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"EssServiceUser\" -r \"service\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.EssService\" -c {generalConfiguration.PathsToArhievedStageServices.Ess}\\Release\\Configurations\\Audiences\\EssServiceAudience.json\" -p icon=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}/logo_32.png\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.EssSite\" -c {generalConfiguration.PathsToArhievedStageServices.Ess}\\Release\\Configurations\\AudiencesEssSiteAudience.json\" -p returnUrl=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}\" -p originUrl=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}\" -p icon=\"https://{generalConfiguration.EssSiteHost}:{generalConfiguration.EssSitePort}/logo_32.png\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.MessageBroker\" -c {generalConfiguration.PathsToArhievedStageServices.MessageBroker}\\Release\\MessageBrokerAudience.json\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add user \"SignServiceUser\" -p password=\"11111\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add user \"SignServiceOperator\" -p password=\"11111\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add role \"Admins\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add role \"Users\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"SignServiceUser\" -r \"service\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id assign -u \"SignServiceOperator\" -r \"Admins\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.SignService\" -c {generalConfiguration.PathsToArhievedStageServices.SignService}\\Release\\SignServiceAudience.json\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Directum.Core.BlobStorageService\" -c {generalConfiguration.PathsToArhievedStageServices.StorageService}\\Release\\BlobStorageServiceAudience.json\"");
+                    await ExecuteCommandAsync(pathToIdCLI, $"id add resource \"Integration service\" -c  {generalConfiguration.PathsToArhievedStageServices.Ess}\\Release\\Configurations\\Audiences\\RXIntegrationServiceAudience.json\"");
+                }
             }
             catch (Exception ex)
             {
@@ -863,6 +944,7 @@ namespace FastESSInstaller
                 Console.WriteLine($"Не удалось найти Config.json в папке проекта");
                 Console.ResetColor();
             }
+            Console.WriteLine($"Утилита завершила свою работу");
             Console.ReadKey();
         }
     }

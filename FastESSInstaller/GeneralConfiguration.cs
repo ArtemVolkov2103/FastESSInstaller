@@ -10,9 +10,11 @@ namespace FastESSInstaller
 {
     class GeneralConfiguration
     {
+        public bool OnePathToServices { get; set; }
         public string InstanceFolder { get; set; }
         public string InstanceTag { get; set; }
         public string PathToArhievedServices { get; set; }
+        public PathsToArhievedStageServices PathsToArhievedStageServices { get; set; }
         public PGDataBase DataBase { get; set; }
         public string RabbitMQ { get; set; }
         public string TokenIssuer { get; set; }
@@ -46,6 +48,15 @@ namespace FastESSInstaller
         
         public Durability Durability { get; set; }
 
+    }
+    public class PathsToArhievedStageServices
+    {
+        public string DocumentService { get; set; }
+        public string Ess { get; set; }
+        public string IdentityService_IdCLI { get; set; }
+        public string MessageBroker { get; set; }
+        public string SignService { get; set; }
+        public string StorageService { get; set; }
     }
     public class PGDataBase
     {
