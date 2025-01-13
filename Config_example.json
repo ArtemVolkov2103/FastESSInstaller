@@ -1,7 +1,16 @@
 {
+    "OnePathToServices": false,
     "InstanceFolder": "D:\\TestEss", //Директория, в которую будут распакованы сервисы ЛК.
     "InstanceTag": "243", //Тег, который будет в названии сайта и пула сервисов.
-    "PathToArhievedServices": "\\\\irnpo\\public\\Ess\\Platform\\2.4\\2.4.3\\Components",
+    "PathToArhievedServices": "\\\\irnpo\\public\\Ess\\Platform\\2.4\\2.4.3\\Components", //если сервисы берутся из папки, которая относится к платформе с RN
+    "PathsToArhievedStageServices": {
+      "DocumentService": "\\\\comp.npo\\data\\OIR\\PUBLIC\\CoreServices\\DocumentService\\1.1\\1.1.43.0",
+      "Ess": "\\\\irnpo\\public\\SelfServiceOffice\\2.5\\2.5.4.0",
+      "IdentityService_IdCLI": "\\\\irnpo\\public\\Identity\\2.3\\2.3.15.0",
+      "MessageBroker": "\\\\dir-fs-01\\hrproshare\\Builds\\MessageBroker\\2.3\\2.3.3.0",
+      "SignService": "\\\\dir-fs-01\\hrproshare\\Builds\\SigningPlatform\\SignService\\3.7\\3.7.1.0",
+      "StorageService": "\\\\comp.npo\\data\\OIR\\PUBLIC\\CoreServices\\BlobStorageService\\1.2\\1.2.30.0"
+    },
     "DataBase": { //Данные для формирования строк подключения к БД. Пока только СУБД Postges.
       "DBHost": "localhost",
       "Port": "46",
@@ -18,7 +27,7 @@
     "IntegrationServiceUser": "Service User",
     "IntegrationServicePassword": "11111",
     "RxVersion": "4.12",
-    "EssPlatformVersion": "2.4",
+    "EssPlatformVersion": "2.5",
     //В этих четырёх строках важно экранировать слеши - 4 вначале и по 2 между директориями.
     "EssBaseEndpointPath": "\\\\irnpo\\public\\Ess\\Platform\\2.4\\2.4.3\\Solutions\\Ess\\TargetSystems\\EssBaseEndpoint.json",
     "EssBasePath": "\\\\irnpo\\public\\Ess\\Platform\\2.4\\2.4.3\\Solutions\\Ess\\EssBase.xml",
