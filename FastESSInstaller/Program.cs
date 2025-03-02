@@ -27,12 +27,13 @@ namespace FastESSInstaller
             ReadCommentHandling = JsonCommentHandling.Skip //чтобы не ругался на комментарии в конфигах
         };
         static GeneralConfiguration generalConfiguration = new GeneralConfiguration();
+        static string logFilePath = "";
 
         static void ClearOldFilesIfExists()
         {
             try
             {
-                Console.Write("Удаление старых папок и файлов... ");
+                Write("", "Удаление старых папок и файлов... ");
                 foreach (var folder in generalConfiguration.ServiceFolders)
                 {
                     DirectoryInfo serviceFolder = new DirectoryInfo(Path.Combine(generalConfiguration.InstanceFolder, folder));
@@ -49,36 +50,32 @@ namespace FastESSInstaller
                         serviceFolder.Delete(true);
                     }
                 }
-                Console.WriteLine("ОК \n");
+                WriteLine("", "ОК \n");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при удалении старых папок и файлов: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при удалении старых папок и файлов: {ex.Message}");
             }
         }
         static void CreateFolders()
         {
             try
             {
-                Console.Write("Создание папок для сервисов... ");
+                Write("", "Создание папок для сервисов... ");
                 foreach (var folder in generalConfiguration.ServiceFolders)
                     Directory.CreateDirectory(Path.Combine(generalConfiguration.InstanceFolder, folder));
-                Console.WriteLine("ОК \n");
+                WriteLine("", "ОК \n");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при создании папок: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при создании папок: {ex.Message}");
             }
         }
         static void CheckIfExistAndExtractFiles(string zipFilePath, string extractPath, bool overwrite)
         {
             try
             {
-                Console.Write($"Извлечение архива {zipFilePath.Substring(zipFilePath.LastIndexOf(Path.DirectorySeparatorChar) + 1)}... ");
+                Write("", $"Извлечение архива {zipFilePath.Substring(zipFilePath.LastIndexOf(Path.DirectorySeparatorChar) + 1)}... ");
                 using (ZipArchive archive = ZipFile.OpenRead(zipFilePath))
                 {
                     foreach (ZipArchiveEntry entry in archive.Entries)
@@ -102,13 +99,11 @@ namespace FastESSInstaller
                         }
                     }
                 }
-                Console.WriteLine("ОК");
+                WriteLine("", "ОК");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при распаковке архива: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при распаковке архива: {ex.Message}");
             }
         }
         static void ExtractArhives()
@@ -197,11 +192,11 @@ namespace FastESSInstaller
                         Path.Combine(generalConfiguration.InstanceFolder, @"IdCLI"), false);
                 }
 
-                Console.WriteLine();
+                WriteLine("", "");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Произошла ошибка при распаковке архивов: {ex.Message}");
+                WriteLine("", $"Произошла ошибка при распаковке архивов: {ex.Message}");
             }
         }
         static void CreateDatabasesIfNotExist()
@@ -210,7 +205,7 @@ namespace FastESSInstaller
             {
                 string connStr = $"Server={generalConfiguration.IdentityServiceHost};Port={generalConfiguration.DataBase.Port};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
                 var connection = new NpgsqlConnection(connStr);
-                Console.WriteLine("Проверка наличия БД... ");
+                WriteLine("", "Проверка наличия БД... ");
                 connection.Open();
                 var databaseNames = new List<string> {
                     generalConfiguration.DataBase.EssDatabaseName,
@@ -226,7 +221,7 @@ namespace FastESSInstaller
                         {
                             string existingDbName = reader.GetString(0);
                             databaseNames.Remove(databaseNames.Single(name => name.Equals(existingDbName))); //из списка БД убираются уже существующие
-                            Console.WriteLine($"База данных '{existingDbName}' уже существует");
+                            WriteLine("", $"База данных '{existingDbName}' уже существует");
                         }
                     }
                 }
@@ -238,27 +233,21 @@ namespace FastESSInstaller
                         using (var createCommand = new NpgsqlCommand(createDbQuery, connection))
                         {
                             createCommand.ExecuteNonQuery();
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine($"База данных '{dbName}' создана успешно");
-                            Console.ResetColor();
+                            WriteLine("Green", $"База данных '{dbName}' создана успешно");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Произошла ошибка при создании БД '{dbName}': {ex.Message}");
-                        Console.ResetColor();
+                        WriteLine("Red", $"Произошла ошибка при создании БД '{dbName}': {ex.Message}");
                     }
                 }
                 connection.Close();
 
-                Console.WriteLine("ОК \n");
+                WriteLine("", "ОК \n");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при создании БД: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при создании БД: {ex.Message}");
             }
         }
         static void ConfigureDB()
@@ -268,7 +257,7 @@ namespace FastESSInstaller
                 string connectionToEssString = $"Server={generalConfiguration.IdentityServiceHost};Port={generalConfiguration.DataBase.Port};Database={generalConfiguration.DataBase.EssDatabaseName};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
                 string connectionToIdentityString = $"Server={generalConfiguration.IdentityServiceHost};Port={generalConfiguration.DataBase.Port};Database={generalConfiguration.DataBase.IdDatabaseName};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
                 string connectionToMessagesString = $"Server={generalConfiguration.MessagingServiceHost};Port={generalConfiguration.DataBase.Port};Database={generalConfiguration.DataBase.MessagesDatabaseName};User Id={generalConfiguration.DataBase.Username};Password={generalConfiguration.DataBase.Password};";
-                Console.Write("Выполнение скриптов настройки БД... ");
+                Write("", "Выполнение скриптов настройки БД... ");
                 var EssScriptPath = $@"{generalConfiguration.PathsToArhievedStageServices.Ess}\Release\DeployScripts\PostgreSql\InitializeDatabase.sql";
                 var IdentityScriptPath = $@"{generalConfiguration.PathsToArhievedStageServices.IdentityService_IdCLI}\Release\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
                 var MessagesScriptPath = $@"{generalConfiguration.PathsToArhievedStageServices.MessageBroker}\Release\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
@@ -277,7 +266,7 @@ namespace FastESSInstaller
                     EssScriptPath = $@"{generalConfiguration.PathToArhievedServices}\Ess\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
                     IdentityScriptPath = $@"{generalConfiguration.PathToArhievedServices}\IdentityService\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
                     MessagesScriptPath = $@"{generalConfiguration.PathToArhievedServices}\MessageBroker\DatabaseScripts\PostgreSql\InitializeDatabase.sql";
-                    
+
                 }
 
                 string script = File.ReadAllText(EssScriptPath);
@@ -311,20 +300,18 @@ namespace FastESSInstaller
                     }
                 }
 
-                Console.WriteLine("ОК \n");
+                WriteLine("", "ОК \n");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при настройке БД: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при настройке БД: {ex.Message}");
             }
         }
         static void FillDocumentServiceConfig()
         {
             try
             {
-                Console.Write("Заполнение конфига DocumentService... ");
+                Write("", "Заполнение конфига DocumentService... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, "DocumentService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<DocumentServiceConfiguration>(file);
@@ -334,40 +321,36 @@ namespace FastESSInstaller
                 json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига DocumentService: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига DocumentService: {ex.Message}");
             }
         }
         static void FillEssCLIConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига EssCLI... ");
+                Write("", $"Заполнение конфига EssCLI... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, "EssCLI", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<EssCLIConfiguration>(file);
                 json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.EssDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига DocumentService: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига DocumentService: {ex.Message}");
             }
         }
         static void FillEssServiceConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига EssService... ");
+                Write("", $"Заполнение конфига EssService... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, "EssService", "appsettings.json");
                 var file = File.ReadAllText(configPath, Encoding.UTF8);
                 var json = JsonSerializer.Deserialize<EssServiceConfiguration>(file);
@@ -384,20 +367,18 @@ namespace FastESSInstaller
                 json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига EssService: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("", $"Произошла ошибка при заполнении конфига EssService: {ex.Message}");
             }
         }
         static void FillEssSiteConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига EssSite... ");
+                Write("", $"Заполнение конфига EssSite... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, "EssSite", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<EssSiteConfiguration>(file);
@@ -409,40 +390,36 @@ namespace FastESSInstaller
                 json.ClientConfiguration.ServiceEndpoint = "/office/";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига EssSite: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига EssSite: {ex.Message}");
             }
         }
         static void FillIdCLIConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига IdCLI... ");
+                Write("", $"Заполнение конфига IdCLI... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, "IdCLI", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<IdCLIConfiguration>(file, options);
                 json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.IdDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига IdCLI: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига IdCLI: {ex.Message}");
             }
         }
         static void FillIdentityServiceConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига IdentityService... ");
+                Write("", $"Заполнение конфига IdentityService... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, "IdentityService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<IdentityServiceConfiguration>(file, options);
@@ -457,46 +434,56 @@ namespace FastESSInstaller
                 json.AccountEnrichment.Providers[0].Configuration.EssPlatformVersion = generalConfiguration.EssPlatformVersion;
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига IdentityService: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига IdentityService: {ex.Message}");
             }
         }
         static void FillShedulerServiceConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига ShedulerService... ");
+                Write("", $"Заполнение конфига ShedulerService... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\Sheduler", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<ShedulerServiceConfiguration>(file, options);
                 json.ConnectionStrings.Database = $"ProviderName=Npgsql;Host={generalConfiguration.DataBase.DBHost};Port={generalConfiguration.DataBase.Port};database={generalConfiguration.DataBase.MessagesDatabaseName};Username={generalConfiguration.DataBase.Username};password={generalConfiguration.DataBase.Password};";
                 json.Transport.SmsDeliveryProxy = "Sms";
-                json.Transport.Proxies = new Proxy[] { json.Transport.Proxies[0] };
+
+                var proxy = new Proxy
+                {
+                    Name = "Sms",
+                    Type = "Core.MessageBroker.Adapters.SmscTransport.SmscSmsTransportProxy, Core.MessageBroker.Adapters.SmscTransport, Version=1.0.0.0, Culture=neutral, PublicKeyToken=427ba5252f628cb0",
+                    Configuration = new Configuration
+                    {
+                        Username = "DIDSMS",
+                        Password = "7863400",
+                        Sender = "DIDSMS"
+                    }
+                };
+                json.Transport.Proxies = proxy;
+                // В новых версиях Proxies указывается не как массив, поэтому этот код не работает
+                /*json.Transport.Proxies = new Proxy[] { json.Transport.Proxies[0] };
                 json.Transport.Proxies[0].Name = "Sms";
                 json.Transport.Proxies[0].Configuration.Username = "DIDSMS";
                 json.Transport.Proxies[0].Configuration.Password = "7863400";
-                json.Transport.Proxies[0].Configuration.Sender = "DIDSMS";
+                json.Transport.Proxies[0].Configuration.Sender = "DIDSMS";*/
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига ShedulerService: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига ShedulerService: {ex.Message}");
             }
         }
         static void FillWebApiServiceConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига WebApiService... ");
+                Write("", $"Заполнение конфига WebApiService... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, @"MessageBroker\WebApiService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<WebApiServiceConfiguration>(file, options);
@@ -507,20 +494,18 @@ namespace FastESSInstaller
                 json.Scheduler.HealthCheckUrl = $"http://{generalConfiguration.ShedulingServiceHost}:{generalConfiguration.ShedulingServicePort}/health";
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига WebApiService: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига WebApiService: {ex.Message}");
             }
         }
         static void FillSignServiceConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига SignService... ");
+                Write("", $"Заполнение конфига SignService... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, "SignService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<SignServiceConfiguration>(file, options);
@@ -543,20 +528,18 @@ namespace FastESSInstaller
                 json.Providers.Add(provider);
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига SignService: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига SignService: {ex.Message}");
             }
         }
         static void FillStorageServiceConfig()
         {
             try
             {
-                Console.Write($"Заполнение конфига StorageService... ");
+                Write("", $"Заполнение конфига StorageService... ");
                 var configPath = Path.Combine(generalConfiguration.InstanceFolder, "StorageService", "appsettings.json");
                 var file = File.ReadAllText(configPath);
                 var json = JsonSerializer.Deserialize<StorageServiceConfiguration>(file, options);
@@ -567,13 +550,11 @@ namespace FastESSInstaller
                 json.Authentication.SigningCertificateThumbprint = generalConfiguration.SigningCertificateThumbprint;
                 file = JsonSerializer.Serialize(json, options);
                 File.WriteAllText(configPath, file);
-                Console.WriteLine("OK");
+                WriteLine("", "OK");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при заполнении конфига StorageService: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при заполнении конфига StorageService: {ex.Message}");
             }
         }
         static void FillConfigs()
@@ -591,7 +572,7 @@ namespace FastESSInstaller
             }
             FillSignServiceConfig();
             FillStorageServiceConfig();
-            Console.WriteLine();
+            WriteLine("", "");
         }
         static void AddSiteToIIS(string siteName, string protocol, string port, string path)
         {
@@ -601,7 +582,7 @@ namespace FastESSInstaller
                 {
                     if (iisManager.Sites[siteName] != null)
                     {
-                        Console.WriteLine($"Сайт с именем '{siteName}' уже существует.");
+                        WriteLine("", $"Сайт с именем '{siteName}' уже существует.");
                         return;
                     }
                     var site = iisManager.Sites.Add(siteName, protocol, $"*:{port}:", (generalConfiguration.InstanceFolder + @"\" + path));
@@ -610,14 +591,12 @@ namespace FastESSInstaller
                     newPool.ManagedPipelineMode = ManagedPipelineMode.Integrated;
                     site.ApplicationDefaults.ApplicationPoolName = newPool.Name;
                     iisManager.CommitChanges();
-                    Console.WriteLine($"Сайт и пул {siteName} успешно добавлены.");
+                    WriteLine("", $"Сайт и пул {siteName} успешно добавлены.");
                 }
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при добавлении сайта или пула {siteName}: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при добавлении сайта или пула {siteName}: {ex.Message}");
             }
         }
         static void DeleteSiteFromIIS(string siteName)
@@ -645,14 +624,12 @@ namespace FastESSInstaller
                         iisManager.ApplicationPools.Remove(pool);
                     }
                     iisManager.CommitChanges();
-                    Console.WriteLine($"{siteName} удален из IIS");
+                    WriteLine("", $"{siteName} удален из IIS");
                 }
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при удалении сайта или пула: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка при удалении сайта или пула: {ex.Message}");
             }
         }
         static void AddRedirectRule(XmlDocument xmlDoc, XmlNode rulesNode, string ruleName, string matchUrl, string redirectUrl)
@@ -732,13 +709,11 @@ namespace FastESSInstaller
                 }
                 xmlDoc.Save(webConfigPath);
 
-                Console.WriteLine($"Настройки перенаправления для сайта {"EssSite" + generalConfiguration.InstanceTag} успешно сохранены в web.config.");
+                WriteLine("", $"Настройки перенаправления для сайта {"EssSite" + generalConfiguration.InstanceTag} успешно сохранены в web.config.");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка: {ex.Message}");
-                Console.ResetColor();
+                WriteLine("Red", $"Произошла ошибка: {ex.Message}");
             }
 
             AddSiteToIIS("Identity" + generalConfiguration.InstanceTag, "https", generalConfiguration.IdentityServicePort, "IdentityService");
@@ -750,13 +725,13 @@ namespace FastESSInstaller
             AddSiteToIIS("SignService" + generalConfiguration.InstanceTag, "https", generalConfiguration.SignServicePort, "SignService");
 
             AddSiteToIIS("Storage" + generalConfiguration.InstanceTag, "http", generalConfiguration.StorageServicePort, "StorageService");
-            Console.WriteLine();
+            WriteLine("", "");
         }
         static async Task ExecuteCommandAsync(string workingDirectory, string command)
         {
             try
             {
-                Console.WriteLine(command);
+                WriteLine("", command);
                 using (Process process = new Process())
                 {
                     process.StartInfo.FileName = "cmd.exe";
@@ -774,8 +749,9 @@ namespace FastESSInstaller
                         if (!string.IsNullOrEmpty(e.Data))
                         {
                             if (e.Data.Contains("is not exists"))
-                                Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine(e.Data);
+                                WriteLine("Red", e.Data);
+                            else
+                                WriteLine("", e.Data);
                             Console.ResetColor();
                         }
                     };
@@ -783,9 +759,7 @@ namespace FastESSInstaller
                     {
                         if (!string.IsNullOrEmpty(e.Data))
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("Ошибка: " + e.Data);
-                            Console.ResetColor();
+                            WriteLine("Red", "Ошибка: " + e.Data);
                         }
                     };
                     process.Start();
@@ -813,9 +787,7 @@ namespace FastESSInstaller
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Произошла ошибка при выполнении консольных команд: " + ex.Message);
-                Console.ResetColor();
+                WriteLine("Red", "Произошла ошибка при выполнении консольных команд: " + ex.Message);
             }
         }
         static async Task ConnectToRX()
@@ -823,7 +795,7 @@ namespace FastESSInstaller
             try
             {
 
-                Console.WriteLine("Выполнение консольных команд... ");
+                WriteLine("", "Выполнение консольных команд... ");
                 var hrpro_AdapterConfigPath = Path.Combine(generalConfiguration.HRProRepositoryPath, "data\\AdapterConfig\\HRPro_AdapterConfig.json");
                 var pathToEssCLI = Path.Combine(generalConfiguration.InstanceFolder, "EssCLI");
                 var pathToIdCLI = Path.Combine(generalConfiguration.InstanceFolder, "IdCLI");
@@ -831,12 +803,12 @@ namespace FastESSInstaller
                     $"Configuration:AppServerConnection:Endpoint=\"{generalConfiguration.IntegrationServiceEndpoint}\" -p " +
                     $"Configuration:AppServerConnection:UserName=\"{generalConfiguration.IntegrationServiceUser}\" -p " +
                     $"Configuration:AppServerConnection:Password=\"{generalConfiguration.IntegrationServicePassword}\" -p " +
-                    $"Configuration:ServerVersion=\"{generalConfiguration.RxVersion}\"");
+                    $"Configuration:ServerVersion=\"{generalConfiguration.RxVersion}\" -q");
                 await ExecuteCommandAsync(pathToEssCLI, $"ess connect \"{hrpro_AdapterConfigPath}\" -p UserIdentity=\"DirectumRX\" -p " +
                     $"Configuration:AppServerConnection:Endpoint=\"{generalConfiguration.IntegrationServiceEndpoint}\" -p " +
                     $"Configuration:AppServerConnection:UserName=\"{generalConfiguration.IntegrationServiceUser}\" -p " +
                     $"Configuration:AppServerConnection:Password=\"{generalConfiguration.IntegrationServicePassword}\" -p " +
-                    $"Configuration:ServerVersion=\"{generalConfiguration.RxVersion}\"");
+                    $"Configuration:ServerVersion=\"{generalConfiguration.RxVersion}\" -q");
                 await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.EssBasePath}\" -a");
                 await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.ESSRepositoryPath}\\data\\EssConfig\\Roles.xml\" -a");
                 await ExecuteCommandAsync(pathToEssCLI, $"ess install \"{generalConfiguration.ESSRepositoryPath}\\data\\EssConfig\\SignPlatform.xml\" -a");
@@ -888,9 +860,42 @@ namespace FastESSInstaller
             }
             catch (Exception ex)
             {
+                WriteLine("Red", $"Произошла ошибка при выполнении консольных команд: {ex.Message}");
+            }
+        }
+
+        static void WriteLine(string consoleColor, string text)
+        {
+            if (consoleColor == "Green")
+                Console.ForegroundColor = ConsoleColor.Green;
+            if (consoleColor == "Red")
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Произошла ошибка при выполнении консольных команд: {ex.Message}");
-                Console.ResetColor();
+            Console.WriteLine(text);
+            Console.ResetColor();
+            if (logFilePath != string.Empty)
+            {
+                using StreamWriter writer = new StreamWriter(logFilePath, true, Encoding.UTF8);
+                {
+                    writer.Write(text + "\n");
+                }
+            }
+
+        }
+
+        static void Write(string consoleColor, string text)
+        {
+            if (consoleColor == "Green")
+                Console.ForegroundColor = ConsoleColor.Green;
+            if (consoleColor == "Red")
+                Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(text);
+
+            if (logFilePath != string.Empty)
+            {
+                using StreamWriter writer = new StreamWriter(logFilePath, true, Encoding.UTF8);
+                {
+                    writer.Write(text);
+                }
             }
         }
 
@@ -901,33 +906,40 @@ namespace FastESSInstaller
             string releasePath = Path.Combine(new FileInfo(Process.GetCurrentProcess().MainModule.FileName).DirectoryName, @"Config.json");
             if (File.Exists(releasePath))
                 configPath = releasePath;
-            Console.WriteLine("Используется конфиг по пути: " + configPath);
+            logFilePath = Path.Combine(Path.GetDirectoryName(configPath), @"FastESSInstallerLog.txt");
+            // Если лог-файл существует, то очистить его содержимое
+            if (File.Exists(logFilePath))
+            {
+                using StreamWriter writer = new StreamWriter(logFilePath, false, Encoding.UTF8);
+                {
+                    writer.Write("");
+                }
+            }
+            WriteLine("", "Используется конфиг по пути: " + configPath);
             if (File.Exists(configPath))
             {
                 try
                 {
-                    Console.Write($"Чтение Config.json... ");
+                    Write("", $"Чтение Config.json... ");
                     string data = File.ReadAllText(configPath);
                     generalConfiguration = JsonSerializer.Deserialize<GeneralConfiguration>(data, options);
-                    Console.WriteLine($"OK");
+                    WriteLine("", $"OK");
                 }
                 catch (Exception ex)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Произошла ошибка при чтении Config.json: {ex.Message}");
-                    Console.ResetColor();
+                    WriteLine("Red", $"Произошла ошибка при чтении Config.json: {ex.Message}");
                 }
                 Process[] processes = Process.GetProcessesByName("ess");
                 foreach (Process process in processes)
                 {
-                    Console.WriteLine(process.ProcessName + " " + process.MainModule.FileName);
+                    WriteLine("", process.ProcessName + " " + process.MainModule.FileName);
                     if (process.MainModule.FileName.Contains(generalConfiguration.InstanceFolder))
                     {
                         //process.Kill();
-                        Console.WriteLine($"Process {process.ProcessName} has been killed.");
+                        WriteLine("", $"Process {process.ProcessName} has been killed.");
                     }
                 }
-                Console.WriteLine();
+                WriteLine("", "");
                 StopAndDeleteOldSitesAndPools();
                 ClearOldFilesIfExists();
                 CreateFolders();
@@ -940,11 +952,9 @@ namespace FastESSInstaller
             }
             else
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Не удалось найти Config.json в папке проекта");
-                Console.ResetColor();
+                WriteLine("Red", $"Не удалось найти Config.json в папке проекта");
             }
-            Console.WriteLine($"Утилита завершила свою работу");
+            WriteLine("Green", $"Утилита завершила свою работу");
             Console.ReadKey();
         }
     }

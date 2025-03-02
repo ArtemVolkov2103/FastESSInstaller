@@ -28,8 +28,9 @@ namespace FastESSInstaller
     }
     public class Transport
     {
+        public string PluginsPath  { get; set; }
         public string SmsDeliveryProxy { get; set; }
-        public Proxy[] Proxies { get; set; }
+        public Proxy Proxies { get; set; }
     }
 
     public class Proxy
