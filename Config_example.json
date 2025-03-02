@@ -23,7 +23,7 @@
     "RabbitMQ": "userName=;password=;hostName=192.168.58.88;port=;virtualHost=;",
     "TokenIssuer": "HrProId",
     "SigningCertificateThumbprint": "", //Отпечаток сертификата, 76d8..........84c00fba
-    "IntegrationServiceEndpoint": "http://localhost:RxVersion/integration/odata", //Эндпоинт СИ. Обращайте внимание на протокол.
+    "IntegrationServiceEndpoint": "http://localhost:Порт DirectumRX/integration/odata", //Эндпоинт СИ. Обращайте внимание на протокол.
     "IntegrationServiceUser": "Service User",
     "IntegrationServicePassword": "11111",
     "RxVersion": "4.12",
